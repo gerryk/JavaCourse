@@ -218,63 +218,86 @@ public class Calculator extends JFrame {
 		lastOp = '=';
 	}
 	
-	private void keyHandler(char key)	{
+	private void keyHandler(char key) 	{
 		switch (key)	{
 		case '.':
 			if (newOp)
-				calcDisplay.setText(""+key);
+				displayHandler("" + key, true);
 			else if (calcDisplay.getText().indexOf(".") == -1)
-				calcDisplay.setText(calcDisplay.getText() + key);
+				displayHandler("" + key, false);
 			newOp = false;
 			break;
-		case  '0': 
-			if (newOp)
-				calcDisplay.setText("" + key);
-			else if (calcDisplay.getText().indexOf(".") != -1)
-				calcDisplay.setText(calcDisplay.getText() + key);
-			else if (Float.parseFloat(calcDisplay.getText()) != 0)	
-				calcDisplay.setText(calcDisplay.getText() + key);
-			newOp = false;
+		case  '0':
+			try {
+				if (newOp)
+					displayHandler("" + key, true);
+				else if (calcDisplay.getText().indexOf(".") != -1)
+					displayHandler("" + key, false);
+				else if (Float.parseFloat(calcDisplay.getText()) != 0)	
+					displayHandler("" + key, false);
+				newOp = false;
+			} catch (CalculatorDisplayException e)	{
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				calcReset(true);
+				calcRegister = 0;				
+			}
 			break;
 		case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-			System.out.println("number: "+Float.parseFloat(calcDisplay.getText()));
-			if ((Float.parseFloat(calcDisplay.getText()) == 0 && calcDisplay.getText().indexOf(".") == -1) || newOp)
-				calcDisplay.setText("" + key);
-			else
-				calcDisplay.setText(calcDisplay.getText() + key);			
-			newOp = false;
+			try {
+				if ((Float.parseFloat(calcDisplay.getText()) == 0 && calcDisplay.getText().indexOf(".") == -1) || newOp)
+					displayHandler("" + key, true);
+				else
+					displayHandler("" + key, false);
+				newOp = false;
+			} catch (CalculatorDisplayException e)	{
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				calcReset(true);
+				calcRegister = 0;				
+			}
 			break;
 		case '+': case '-': case '/': case '*': case '=':
-			System.out.println("op: " + key + " lastop: " + lastOp + " total: " + total + " register: " + calcRegister);
-			if (total == 0)	{
-				calcRegister = Float.parseFloat(calcDisplay.getText());
-				total = calcRegister;
-			} else	{
-				calcRegister = Float.parseFloat(calcDisplay.getText());
-				try	{
-					total = doOperation(lastOp, calcRegister, total);
-				} catch (CalculatorException e)	{
-					JOptionPane.showMessageDialog(null, "Error", e.getMessage(), JOptionPane.ERROR_MESSAGE);
-					calcReset(true);
-					calcRegister = 0;
+			try	{
+				if (total == 0)	{
+					calcRegister = Float.parseFloat(calcDisplay.getText());
+					total = calcRegister;
+				} else	{
+					calcRegister = Float.parseFloat(calcDisplay.getText());
+					try	{
+						total = doOperation(lastOp, calcRegister, total);
+					} catch (CalculatorDivideByZeroException e)	{
+						JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+						calcReset(true);
+						calcRegister = 0;
+					}
 				}
+				lastOp = key;
+				if ((int)total ==  total)
+					displayHandler(Integer.toString((int)total), true);
+				else
+					displayHandler(Float.toString(total), true);
+				newOp = true;
+			} catch (CalculatorDisplayException e)	{
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				calcReset(true);
+				calcRegister = 0;
 			}
-			lastOp = key;
-			System.out.println("op: " + key + " lastop: " + lastOp + " total: " + total + " register: " + calcRegister);
-			if ((int)total ==  total)
-				calcDisplay.setText(Integer.toString((int)total));				
-			else
-				calcDisplay.setText(Float.toString(total));
-			newOp = true;
 			break;
 		}
 	}
 	
-	private float doOperation(char op, float value1, float value2) throws CalculatorException	{
+	private void displayHandler(String text, Boolean fresh) throws CalculatorDisplayException	{
+		if (calcDisplay.getText().length() >= 14)
+			throw new CalculatorDisplayException("Overflow - number too large");
+		if (fresh)
+			calcDisplay.setText(text);		
+		else
+			calcDisplay.setText(calcDisplay.getText() + text);
+	}
+	
+	private float doOperation(char op, float value1, float value2) throws CalculatorDivideByZeroException	{
 		float opTotal = 0;
 		if (op == '/' && value1 == 0)
-			throw new CalculatorException("Divide by zero");
-		System.out.println("Op: " + op + " "+ value1 + " " + value2);
+			throw new CalculatorDisplayException("Divide by zero");
 		switch (op)		{
 			case '+':
 				opTotal = value2 + value1;
@@ -292,7 +315,6 @@ public class Calculator extends JFrame {
 				opTotal = value2;
 				break;
 		}
-		System.out.println("New total: " + opTotal);
 		return opTotal;
 	}
 }

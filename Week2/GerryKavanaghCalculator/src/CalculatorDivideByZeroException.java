@@ -1,28 +1,28 @@
 
-public class CalculatorException extends RuntimeException {
+public class CalculatorDivideByZeroException extends RuntimeException {
 
-	public CalculatorException() {
+	public CalculatorDivideByZeroException() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public CalculatorException(String message, Throwable cause,
+	public CalculatorDivideByZeroException(String message, Throwable cause,
 			boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 		// TODO Auto-generated constructor stub
 	}
 
-	public CalculatorException(String message, Throwable cause) {
+	public CalculatorDivideByZeroException(String message, Throwable cause) {
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
 
-	public CalculatorException(String message) {
+	public CalculatorDivideByZeroException(String message) {
 		super(message);
 		// TODO Auto-generated constructor stub
 	}
 
-	public CalculatorException(Throwable cause) {
+	public CalculatorDivideByZeroException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}
